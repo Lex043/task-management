@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 const Signup = () => {
+    const navigate = useNavigate();
     const [details, setDetails] = useState({ email: "", password: "" });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -12,11 +15,31 @@ const Signup = () => {
         }));
     };
 
-    const submitDetails = (e: React.FormEvent) => {
+    const submitDetails = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        await createUserWithEmailAndPassword(
+            auth,
+            details.email,
+            details.password
+        )
+            .then((userCredential) => {
+                // Signed in
+                const user = userCredential.user;
+                console.log(user);
+                navigate("/login");
+                // ...
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.log(errorCode, errorMessage);
+                // ..
+            });
         console.log(details);
         setDetails({ email: "", password: "" });
     };
+
     return (
         <section className="p-[40px] w-full max-w-[30rem] font-mono">
             <h1 className="text-5xl text-white font-bold my-6">Kanban</h1>

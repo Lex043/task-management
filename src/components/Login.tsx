@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
+    const navigate = useNavigate();
     const [details, setDetails] = useState({ email: "", password: "" });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -14,9 +19,34 @@ const Login = () => {
 
     const submitDetails = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(details);
+        signInWithEmailAndPassword(auth, details.email, details.password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                console.log("User signed in:", user);
+                toast.success("Success", {
+                    position: "top-right",
+                    style: {
+                        background: "#000",
+                        color: "#FFF",
+                    },
+                });
+                navigate("/");
+            })
+            .catch((error) => {
+                const errorMessage = error.message;
+                console.log(errorMessage);
+                toast.error(`${errorMessage}`, {
+                    position: "top-right",
+                    style: {
+                        background: "#000",
+                        color: "#FFF",
+                    },
+                });
+            });
+
         setDetails({ email: "", password: "" });
     };
+
     return (
         <section className="p-[40px] w-full max-w-[30rem] font-mono">
             <h1 className="text-5xl text-white font-bold my-6">Kanban</h1>
@@ -57,6 +87,7 @@ const Login = () => {
                     </p>
                 </form>
             </div>
+            <ToastContainer />
         </section>
     );
 };
